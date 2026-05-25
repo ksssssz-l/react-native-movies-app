@@ -1,112 +1,163 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
+import { INITIAL_MOVIES } from '@/data/movies';
+import { useFavorites } from '@/context/favorites';
+import { MovieCard } from '@/components/movie-card';
+import { FilterButton } from '@/components/filter-button';
+import { EmptyState } from '@/components/empty-state';
+import { ThemeToggle } from '@/components/theme-toggle';
 
-export default function TabTwoScreen() {
+const TYPE_FILTERS = [
+  { label: 'Tous', value: 'all' as const },
+  { label: 'Films', value: 'movie' as const },
+  { label: 'Séries', value: 'series' as const },
+];
+
+export default function CatalogueScreen() {
+  const scheme = useColorScheme() ?? 'light';
+  const colors = Colors[scheme];
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
+  const [genreFilter, setGenreFilter] = useState<string | null>(null);
+
+  const genres = useMemo(
+    () => Array.from(new Set(INITIAL_MOVIES.map(m => m.genre))).sort(),
+    []
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return INITIAL_MOVIES.filter(movie => {
+      if (typeFilter !== 'all' && movie.type !== typeFilter) return false;
+      if (genreFilter && movie.genre !== genreFilter) return false;
+      if (!q) return true;
+      return (
+        movie.title.toLowerCase().includes(q) ||
+        movie.genre.toLowerCase().includes(q) ||
+        movie.creator.toLowerCase().includes(q) ||
+        movie.tags.some(t => t.toLowerCase().includes(q))
+      );
+    });
+  }, [search, typeFilter, genreFilter]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.text }]}>Catalogue</Text>
+          <ThemeToggle />
+        </View>
+
+        <TextInput
+          style={[
+            styles.searchInput,
+            { backgroundColor: colors.icon + '18', color: colors.text },
+          ]}
+          placeholder="Rechercher par titre, genre, créateur, tag..."
+          placeholderTextColor={colors.icon}
+          value={search}
+          onChangeText={setSearch}
+          clearButtonMode="while-editing"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRowContent}>
+          {TYPE_FILTERS.map(f => (
+            <FilterButton
+              key={f.value}
+              label={f.label}
+              active={typeFilter === f.value}
+              onPress={() => setTypeFilter(f.value)}
+            />
+          ))}
+          <View style={styles.divider} />
+          {genres.map(g => (
+            <FilterButton
+              key={g}
+              label={g}
+              active={genreFilter === g}
+              onPress={() => setGenreFilter(prev => (prev === g ? null : g))}
+            />
+          ))}
+        </ScrollView>
+
+        <Text style={[styles.resultCount, { color: colors.icon }]}>
+          {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
+        </Text>
+      </View>
+
+      <FlatList
+        data={filtered}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <MovieCard
+            movie={item}
+            isFavorite={isFavorite(item.id)}
+            onPress={() => router.push(`/detail/${item.id}`)}
+            onToggleFavorite={() => toggleFavorite(item.id)}
+          />
+        )}
+        ListEmptyComponent={
+          <EmptyState message="Aucun résultat. Essayez d'autres termes ou réinitialisez les filtres." />
+        }
+        contentContainerStyle={filtered.length === 0 ? styles.emptyList : styles.list}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  searchInput: {
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+  },
+  filterRowContent: {
     flexDirection: 'row',
     gap: 8,
+    alignItems: 'center',
+    paddingRight: 4,
+  },
+  divider: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  resultCount: {
+    fontSize: 13,
+  },
+  list: {
+    paddingBottom: 16,
+  },
+  emptyList: {
+    flex: 1,
   },
 });

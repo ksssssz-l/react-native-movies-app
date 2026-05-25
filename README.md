@@ -1,50 +1,52 @@
-# Welcome to your Expo app 👋
+Lukas Lemonnier
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# CinéCatalogue
 
-## Get started
+Application mobile de catalogue de films et séries, développée avec React Native, Expo et TypeScript.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Description
 
-2. Start the app
+CinéCatalogue permet de consulter un catalogue de 37 titres (films et séries), de rechercher et filtrer des titres, d'accéder à une fiche détail, de gérer ses favoris et de soumettre des recommandations via un formulaire. Toutes les données sont locales — aucune API externe.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Fonctionnalités réalisées
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Accueil** : nom de l'application, présentation, 5 statistiques (total, films, séries, genres, favoris), accès rapide au catalogue et au formulaire
+- **Catalogue** : liste complète avec `FlatList`, composant `MovieCard` réutilisable affichant titre, type, genre, année, note, durée/saisons, placeholder et état favori
+- **Recherche** : recherche en temps réel par titre, genre, créateur ou tag
+- **Filtres** : filtre par type (Tous / Films / Séries) et par genre, combinables avec la recherche ; affichage du nombre de résultats et message si aucun résultat
+- **Écran détail** : informations complètes, synopsis, tags, bouton retour natif, bouton favori
+- **Favoris** : ajout/retrait depuis la carte ou le détail, écran dédié "Mes Favoris", message si aucun favori
+- **Formulaire de recommandation** : 7 champs (titre, type, genre, créateur, année, note, commentaire), validation par champ, message d'erreur et écran de confirmation
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
-
-When you're ready, run:
+## Installation et lancement
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Scanner le QR code avec **Expo Go** (iOS / Android), ou appuyer sur :
+- `a` pour ouvrir l'émulateur Android
+- `i` pour ouvrir le simulateur iOS
+- `w` pour ouvrir la version web
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## Difficultés rencontrées
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **Partage d'état des favoris entre les onglets** : l'état favori doit être cohérent entre le catalogue, l'écran détail et l'onglet Favoris. Résolu avec React Context (`FavoritesProvider`) placé à la racine du layout, sans recourir à Redux ou Zustand.
+- **Filtres combinés** : faire fonctionner simultanément la recherche textuelle, le filtre par type et le filtre par genre sans recalcul inutile. Résolu avec `useMemo` sur les trois critères combinés.
+- **Typage strict TypeScript** : le champ `isFavorite` présent dans les données n'était pas dans le type `Movie` du cahier des charges. Ajout explicite dans `types/movie.ts` pour éviter les erreurs TypeScript.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## Bonus réalisés
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Compteur de favoris** : badge rouge sur l'onglet "Favoris" indiquant le nombre de titres en favori
+- **Thème sombre / clair** : toutes les couleurs s'adaptent automatiquement au thème système via `useColorScheme` et le système de tokens `Colors`

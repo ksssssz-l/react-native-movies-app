@@ -18,6 +18,10 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'film': 'movie',
+  'heart.fill': 'favorite',
+  'heart': 'favorite-border',
+  'square.and.pencil': 'edit',
 } as IconMapping;
 
 /**
